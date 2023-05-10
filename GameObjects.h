@@ -33,6 +33,7 @@ protected: // derived classes can access
 	float health = 100;
 	float maxHealth = 100;
 	float oldX = 0, oldY = 0;
+	int remainingTime = 0;
 
 	SDL_Rect srcRect = { 0,0,0,0 };
 	SDL_Rect destRect = { 0,0,0,0 };
@@ -40,34 +41,6 @@ protected: // derived classes can access
 };
 
 // =======================================================
-
-
-class Projectile :GameObject
-{
-public:
-	Projectile(const char* spriteFileName, int xPos, int yPos, float rotation, float spriteSize);
-
-	bool getAliveState() { return isActive; }
-	void setAlive(bool state) { isActive = state; }
-	void fire(float xSent, float ySent, float angleSent);
-	void fireAtTarget(float startX, float startY, float targetX, float targetY);
-	void update(float frameTime);
-	void renderProjectile();
-	void setBulletSpeed(float newSpeed) { speed = newSpeed; }
-	float getX() { return x; }
-	float getY() { return y; }
-
-	float getDamage() { return damage; }
-	void setDamage(float newDamage) { damage = newDamage; }
-	Uint32 getSize() { return bulletSize; }
-	
-
-private:
-	Uint32 lastTimeActivated = 0;
-	Uint32 disableTime = 0;
-	Uint32  bulletSize = 0;
-	float damage = 30, range = 20;
-};
 
 
 
@@ -86,7 +59,10 @@ public:
 	float getY() { return y; }
 	float getAngle() { return angle; }
 	float getHP() { return health; }
+	int getTimer() { remainingTime = (120 - SDL_GetTicks64() / 1000); return remainingTime; }
 	void changeHP(float hpChange) { health += hpChange; }
+	void setHP(float newHP) { health = newHP; }
+	void setTimer(int newTimer) { remainingTime = newTimer ; }
 
 	float getVelX() { return xVel;}
 	float getVelY() { return yVel; }
@@ -115,24 +91,21 @@ public:
 	void setAlive(bool state) { isActive = state; }
 	bool getAliveState() { return isActive; }
 	void roam(float frameTime);
-	void chasePC(float pcX, float pcY);
 	void setSpeed(float newSpeed) { speed = newSpeed; }
-	void screenCrawl(float frameTime);
 	float getX() { return x; }
 	float getY() { return y; }
 	void setX(float newX) { x = newX; }
 	void setY(float newY) { y = newY; }
-
+	void setHP(float newHP) { health = newHP; }
 	float getHP() { return health; }
 	void changeHP(float hpChange) { health += hpChange; }
-	int getNextShotTime() { return nextShotTime; }
-	void setNextShotTime(int newTime) { nextShotTime = newTime; }
 	void changeDirection();
 
 private:
 	float drag = 0.99F;
 	float acceleration = 50;
 	int nextShotTime = 0;
+
 };
 
 class Friendly :GameObject
@@ -143,22 +116,20 @@ public:
 	void updateFriendly();
 	void setAlive(bool state) { isActive = state; }
 	bool getAliveState() { return isActive; }
-	void roam(float frameTime);
-	void chasePC(float pcX, float pcY);
 	void setSpeed(float newSpeed) { speed = newSpeed; }
-	void screenCrawl(float frameTime);
+	void patrolFriendly(float frameTime);
 	float getX() { return x; }
 	float getY() { return y; }
 	void setX(float newX) { x = newX; }
 	void setY(float newY) { y = newY; }
+	void setHP(float newHP) { health = newHP; }
 
 	float getHP() { return health; }
 	void changeHP(float hpChange) { health += hpChange; }
-	int getNextShotTime() { return nextShotTime; }
-	void setNextShotTime(int newTime) { nextShotTime = newTime; }
 	void changeDirection();
 private:
 	float drag = 0.99F;
 	float acceleration = 50;
 	int nextShotTime = 0;
+	
 };

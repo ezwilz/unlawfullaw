@@ -129,70 +129,6 @@ void GameObject::screenWrap()
 
 
 // ======================================================= 
-// Projectile Object
-// ======================================================= 
-
-
-Projectile::Projectile(const char* spriteFileName, int xPos, int yPos, float rotation, float spriteSize)
-{
-	Loadtexture(spriteFileName);	// load image from file
-	bulletSize = spriteSize;
-	x = xPos; 	y = yPos;
-	angle = rotation;
-	srcRect.h = srcRect.w = bulletSize;
-	srcRect.x = srcRect.y = 0;
-	destRect.h = destRect.w = bulletSize;
-}//---
-
-void Projectile::fire(float xSent, float ySent, float angleSent)
-{
-	if (!isActive)
-	{
-		isActive = true;
-		x = xSent + SPRITE_SIZE / 2; // center the bullet
-		y = ySent + SPRITE_SIZE / 2;
-		angle = angleSent;
-		xVel = sin(angle * M_PI / 180) * speed;
-		yVel = -cos(angle * M_PI / 180) * speed;
-	}
-}//---
-
-
-void Projectile::fireAtTarget(float startX, float startY, float targetX, float targetY)
-{
-	if (!isActive)
-	{
-		isActive = true;
-		x = startX + SPRITE_SIZE / 2;
-		y = startY + SPRITE_SIZE / 2;
-		angle = atan2(targetX - x, targetY - y);
-		xVel = sin(angle) * speed;
-		yVel = cos(angle) * speed;
-	}
-}//---
-
-
-void Projectile::renderProjectile()
-{
-	SDL_RenderCopyEx(Game::renderer, spriteTexture, &srcRect, &destRect, angle, NULL, SDL_FLIP_NONE);
-}//---
-
-
-void Projectile::update(float frameTime)
-{
-	// Update Velocity
-	x += xVel * frameTime;
-	y += yVel * frameTime;
-
-	disableOffScreen();
-
-	//update Drawing Position Rect
-	destRect.x = (int)x;
-	destRect.y = (int)y;
-}//---
-
-
-// ======================================================= 
 // PC Object 
 // ======================================================= 
 
@@ -242,15 +178,15 @@ void PlayerCharacter::rotateMove(int keyPressed, float frameTime)
 	if (keyPressed == 97) angle -= rotationSpeed * frameTime;
 	if (keyPressed == 100) angle += rotationSpeed * frameTime;
 	// Cursor Strafe
-	if (keyPressed == 1073741904) xVel -= acceleration * frameTime;
-	if (keyPressed == 1073741903) xVel += acceleration * frameTime;
+	/*if (keyPressed == 1073741904) xVel -= acceleration * frameTime;
+	if (keyPressed == 1073741903) xVel += acceleration * frameTime;*/
 
-	if (keyPressed == 119 || keyPressed == 1073741906) // W  - Move Forward
+	if (keyPressed == 119 /*|| keyPressed == 1073741906*/) // W  - Move Forward
 	{
 		xVel += sin(angle * M_PI / 180) * acceleration * frameTime;
 		yVel -= cos(angle * M_PI / 180) * acceleration * frameTime;
 	}
-	if (keyPressed == 115 || keyPressed == 1073741905) // S	  - Back
+	if (keyPressed == 115 /*|| keyPressed == 1073741905*/) // S	  - Back
 	{
 		xVel -= sin(angle * M_PI / 180) * acceleration * frameTime;
 		yVel += cos(angle * M_PI / 180) * acceleration * frameTime;
@@ -365,17 +301,11 @@ void NPC::changeDirection()
 }//---
 
 
-void NPC::chasePC(float pcX, float pcY)
-{
-	if (x > pcX) x--;
-	if (x < pcX) x++;
-	if (y > pcY) y--;
-	if (y < pcY) y++;
-}//---
-
 
 void NPC::roam(float frameTime)
 {
+	
+
 	oldX = x;
 	oldY = y;
 
@@ -395,51 +325,6 @@ void NPC::roam(float frameTime)
 	x += xVel;
 	y += yVel;
 }//---
-
-
-
-void NPC::screenCrawl(float frameTime)
-{
-	if (xVel == 0) // Set some motion is the object is still
-	{
-		xVel = speed;
-		yVel = -1;
-	}
-
-	if (x > SCREEN_WIDTH - SPRITE_SIZE) // hit RHS
-	{
-		x = SCREEN_WIDTH - SPRITE_SIZE;
-		if (yVel < 0)
-			y += SPRITE_SIZE;
-		else
-			y -= SPRITE_SIZE;
-		xVel = -xVel;
-	}
-	if (x < 0) // hit LHS
-	{
-		x = 0;
-		if (yVel < 0)
-			y += SPRITE_SIZE;
-		else
-			y -= SPRITE_SIZE;
-		xVel = -xVel;
-	}
-
-	if (y > SCREEN_HEIGHT - SPRITE_SIZE) // hit bottom of Screen
-	{
-		y = 512;
-		yVel = -yVel;
-	}
-
-	if (y < 0)// hit top of Screen
-	{
-		y = 0;
-		yVel = -yVel;
-	}
-
-	x += xVel * frameTime;
-}//---
-
 
 // =======================================================
 
@@ -488,80 +373,31 @@ void Friendly::changeDirection()
 }//---
 
 
-void Friendly::chasePC(float pcX, float pcY)
-{
-	if (x > pcX) x--;
-	if (x < pcX) x++;
-	if (y > pcY) y--;
-	if (y < pcY) y++;
-}//---
 
-
-void Friendly::roam(float frameTime)
+void Friendly :: patrolFriendly(float frameTime)
 {
+	speed = 50;
 	oldX = x;
 	oldY = y;
-
 	// Move Forward
-	xVel = sin(angle * M_PI / 180) * speed * frameTime;
+    xVel = sin(angle * M_PI / 180) * speed * frameTime;
 	yVel = -cos(angle * M_PI / 180) * speed * frameTime;
 
 	// Randomise direction if NPC reach edges
 	if (x > (SCREEN_WIDTH - SPRITE_SIZE) || x < 0 || y > SCREEN_HEIGHT - SPRITE_SIZE || y < 0)
 	{
 		angle = rand() % 360 + 1;
-	}
+	}	
+		
+
 
 	screenLimit();
 
 	// Update positions
 	x += xVel;
 	y += yVel;
-}//---
+}
 
-
-
-void Friendly::screenCrawl(float frameTime)
-{
-	if (xVel == 0) // Set some motion is the object is still
-	{
-		xVel = speed;
-		yVel = -1;
-	}
-
-	if (x > SCREEN_WIDTH - SPRITE_SIZE) // hit RHS
-	{
-		x = SCREEN_WIDTH - SPRITE_SIZE;
-		if (yVel < 0)
-			y += SPRITE_SIZE;
-		else
-			y -= SPRITE_SIZE;
-		xVel = -xVel;
-	}
-	if (x < 0) // hit LHS
-	{
-		x = 0;
-		if (yVel < 0)
-			y += SPRITE_SIZE;
-		else
-			y -= SPRITE_SIZE;
-		xVel = -xVel;
-	}
-
-	if (y > SCREEN_HEIGHT - SPRITE_SIZE) // hit bottom of Screen
-	{
-		y = 512;
-		yVel = -yVel;
-	}
-
-	if (y < 0)// hit top of Screen
-	{
-		y = 0;
-		yVel = -yVel;
-	}
-
-	x += xVel * frameTime;
-}//---
 
 
 // =======================================================

@@ -9,7 +9,7 @@ int Levels::getTileContent(int level, int x, int y)
 }//---
 
 
-void Levels::setTileContent(int level, int x, int y, int newObject) 
+void Levels::setTileContent(int level, int x, int y, int newObject)
 {
 	levelMaps[level][y][x] = newObject;
 }//---

@@ -22,6 +22,7 @@
 class Game
 {
 public:	
+
 	Game(); // constructor
 	bool isRunning() { return gameRunning; }
 	void startSDL(const char* title);
@@ -32,12 +33,18 @@ public:
 	void checkCollision();
 	void checkAttacks();
 	void checkGameStates();
-	void drawHPBars();
+	
+	//timer functions
 	void updateGUI();
+	int getLevel() { return currentLevel; }
+
 	void update(float frametime);
 	void render();
 	void closeSDL();
 	void exitScreen();
+	bool isReplaying() { return replay; }
+	void levelCompleteScreen();
+	void resetAllObjects();
 
 	static SDL_Renderer* renderer;
 	static SDL_Event playerInputEvent;
@@ -45,10 +52,11 @@ public:
 private:
 	bool gameRunning = false;
 	SDL_Window* gameWindow = nullptr;	
+	bool replay = true;
 
-	int activeItems = 0;
 	int activeNPCs = 0;
-	int activeFriendly = 0;
+	int activeFNPCs = 0;
+	int currentLevel = 0;
 };
 
 // =======================================================
